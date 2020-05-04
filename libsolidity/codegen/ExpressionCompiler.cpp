@@ -1718,6 +1718,17 @@ bool ExpressionCompiler::visit(MemberAccess const& _memberAccess)
 			solAssert(false, "Illegal fixed bytes member.");
 		break;
 	}
+	case Type::Category::Module:
+	{
+		if (auto funType = dynamic_cast<FunctionType const*>(_memberAccess.annotation().type))
+		{
+			auto const* funDef = dynamic_cast<FunctionDefinition const*>(_memberAccess.annotation().referencedDeclaration);
+			solAssert(funDef && funDef->isFree(), "");
+			solAssert(funType->kind() == FunctionType::Kind::Internal, "");
+			utils().pushCombinedFunctionEntryLabel(*funDef);
+		}
+		break;
+	}
 	default:
 		solAssert(false, "Member access to unknown type.");
 	}
@@ -1930,6 +1941,10 @@ void ExpressionCompiler::endVisit(Identifier const& _identifier)
 		// no-op
 	}
 	else if (dynamic_cast<StructDefinition const*>(declaration))
+	{
+		// no-op
+	}
+	else if (dynamic_cast<ImportDirective const*>(declaration))
 	{
 		// no-op
 	}
