@@ -1958,6 +1958,20 @@ TypeResult ArrayType::interfaceType(bool _inLibrary) const
 	return result;
 }
 
+Type const* ArrayType::finalBaseType(bool _breakIfDynamicArrayType) const
+{
+	Type const* finalBaseType = this;
+
+	while (auto arrayType = dynamic_cast<ArrayType const*>(finalBaseType))
+	{
+		if (_breakIfDynamicArrayType && arrayType->isDynamicallySized())
+			break;
+		finalBaseType = arrayType->baseType();
+	}
+
+	return finalBaseType;
+}
+
 u256 ArrayType::memoryDataSize() const
 {
 	solAssert(!isDynamicallySized(), "");
@@ -2188,7 +2202,7 @@ unsigned StructType::calldataEncodedSize(bool) const
 	unsigned size = 0;
 	for (auto const& member: members(nullptr))
 	{
-		solAssert(member.type->canLiveOutsideStorage(), "");
+		solAssert(!member.type->containsNestedMapping(), "");
 		// Struct members are always padded.
 		size += member.type->calldataEncodedSize();
 	}
@@ -2203,7 +2217,7 @@ unsigned StructType::calldataEncodedTailSize() const
 	unsigned size = 0;
 	for (auto const& member: members(nullptr))
 	{
-		solAssert(member.type->canLiveOutsideStorage(), "");
+		solAssert(!member.type->containsNestedMapping(), "");
 		// Struct members are always padded.
 		size += member.type->calldataHeadSize();
 	}
@@ -2215,7 +2229,7 @@ unsigned StructType::calldataOffsetOfMember(std::string const& _member) const
 	unsigned offset = 0;
 	for (auto const& member: members(nullptr))
 	{
-		solAssert(member.type->canLiveOutsideStorage(), "");
+		solAssert(!member.type->containsNestedMapping(), "");
 		if (member.name == _member)
 			return offset;
 		// Struct members are always padded.
@@ -2252,6 +2266,42 @@ u256 StructType::storageSize() const
 	return max<u256>(1, members(nullptr).storageSize());
 }
 
+bool StructType::containsNestedMapping() const
+{
+	if (!m_struct.annotation().containsNestedMapping.has_value())
+	{
+		bool hasNestedMapping = false;
+
+		util::BreadthFirstSearch<StructDefinition const*> breadthFirstSearch{{&m_struct}};
+
+		breadthFirstSearch.run(
+			[&](StructDefinition const* _struct, auto&& _addChild)
+			{
+				for (auto const& member: _struct->members())
+				{
+					TypePointer memberType = member->annotation().type;
+					solAssert(memberType, "");
+
+					if (auto arrayType = dynamic_cast<ArrayType const*>(memberType))
+						memberType = arrayType->finalBaseType(false);
+
+					if (dynamic_cast<MappingType const*>(memberType))
+					{
+						hasNestedMapping = true;
+						breadthFirstSearch.abort();
+					}
+					else if (auto structType = dynamic_cast<StructType const*>(memberType))
+						_addChild(&structType->structDefinition());
+				}
+
+			});
+
+		m_struct.annotation().containsNestedMapping = hasNestedMapping;
+	}
+
+	return m_struct.annotation().containsNestedMapping.value();
+}
+
 string StructType::toString(bool _short) const
 {
 	string ret = "struct " + m_struct.annotation().canonicalName;
@@ -2267,10 +2317,7 @@ MemberList::MemberMap StructType::nativeMembers(ContractDefinition const*) const
 	{
 		TypePointer type = variable->annotation().type;
 		solAssert(type, "");
-		// If we are not in storage, skip all members that cannot live outside of storage,
-		// ex. mappings and array of mappings
-		if (location() != DataLocation::Storage && !type->canLiveOutsideStorage())
-			continue;
+		solAssert(!(location() != DataLocation::Storage && type->containsNestedMapping()), "");
 		members.emplace_back(
 			variable->name(),
 			copyForLocationIfReference(type),
@@ -2432,10 +2479,9 @@ FunctionTypePointer StructType::constructorType() const
 {
 	TypePointers paramTypes;
 	strings paramNames;
+	solAssert(!containsNestedMapping(), "");
 	for (auto const& member: members(nullptr))
 	{
-		if (!member.type->canLiveOutsideStorage())
-			continue;
 		paramNames.push_back(member.name);
 		paramTypes.push_back(TypeProvider::withLocationIfReference(DataLocation::Memory, member.type));
 	}
@@ -2469,20 +2515,12 @@ u256 StructType::memoryOffsetOfMember(string const& _name) const
 
 TypePointers StructType::memoryMemberTypes() const
 {
+	solAssert(!containsNestedMapping(), "");
 	TypePointers types;
 	for (ASTPointer<VariableDeclaration> const& variable: m_struct.members())
-		if (variable->annotation().type->canLiveOutsideStorage())
-			types.push_back(TypeProvider::withLocationIfReference(DataLocation::Memory, variable->annotation().type));
-	return types;
-}
+		types.push_back(TypeProvider::withLocationIfReference(DataLocation::Memory, variable->annotation().type));
 
-set<string> StructType::membersMissingInMemory() const
-{
-	set<string> missing;
-	for (ASTPointer<VariableDeclaration> const& variable: m_struct.members())
-		if (!variable->annotation().type->canLiveOutsideStorage())
-			missing.insert(variable->name());
-	return missing;
+	return types;
 }
 
 TypePointer EnumType::encodingType() const
@@ -3586,7 +3624,10 @@ TypeResult MappingType::interfaceType(bool _inLibrary) const
 		}
 	}
 	else
-		return TypeResult::err("Only libraries are allowed to use the mapping type in public or external functions.");
+		return TypeResult::err(
+			"Types containing (nested) mappings can only be parameters or "
+			"return variables of internal or library functions."
+		);
 
 	return this;
 }
