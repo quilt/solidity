@@ -7,6 +7,8 @@ Breaking changes:
  * JSON AST: Removes members with ``null`` value from JSON output.
  * Type Checker: Disallow shifts by signed types.
  * Type Checker: Exponentiation and shifts of literals by non-literals will always use ``uint256`` or ``int256`` as a type.
+ * Type Checker: Disallow structs and arrays in memory or calldata if they contain nested mappings.
+ * Type Checker: Disallow assignments to state variables that contain nested mappings.
 
 Language Features:
  * Yul: Disallow EVM instruction `pc()`.
