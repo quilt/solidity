@@ -1,6 +1,7 @@
 ### 0.6.11 (unreleased)
 
 Language Features:
+ * Allow function definitions outside of contracts, behaving much like internal library functions.
 
 
 Compiler Features:
