@@ -32,6 +32,41 @@ using namespace solidity;
 using namespace solidity::langutil;
 using namespace solidity::frontend;
 
+namespace
+{
+
+void copyMissingTags(StructurallyDocumentedAnnotation& _target, CallableDeclarationAnnotation const& _source)
+{
+	auto& sourceDoc = dynamic_cast<StructurallyDocumentedAnnotation const&>(_source);
+
+	set<string> existingTags;
+
+	for (auto const& iterator: _target.docTags)
+		existingTags.insert(iterator.first);
+
+	for (auto const& [tag, content]: sourceDoc.docTags)
+		if (tag != "inheritdoc" && !existingTags.count(tag))
+			_target.docTags.emplace(tag, content);
+}
+
+CallableDeclaration const* findBaseCallable(std::set<CallableDeclaration const*>& _baseFuncs, string const& _name)
+{
+	for (CallableDeclaration const* baseFuncCandidate: _baseFuncs)
+		if (baseFuncCandidate->annotation().contract->name() == _name)
+			return baseFuncCandidate;
+		else if (auto callable = findBaseCallable(baseFuncCandidate->annotation().baseFunctions, _name))
+			return callable;
+
+	return nullptr;
+}
+
+bool parameterNamesEqual(CallableDeclaration const& _a, CallableDeclaration const& _b)
+{
+	return boost::range::equal(_a.parameters(), _b.parameters(), [](auto const& pa, auto const& pb) { return pa->name() == pb->name(); });
+}
+
+}
+
 bool DocStringAnalyser::analyseDocStrings(SourceUnit const& _sourceUnit)
 {
 	auto errorWatcher = m_errorReporter.errorWatcher();
@@ -60,7 +95,7 @@ bool DocStringAnalyser::visit(VariableDeclaration const& _variable)
 {
 	if (_variable.isStateVariable())
 	{
-		static set<string> const validPublicTags = set<string>{"dev", "notice", "return", "title", "author"};
+		static set<string> const validPublicTags = set<string>{"dev", "notice", "return", "title", "author", "inheritdoc"};
 		if (_variable.isPublic())
 			parseDocStrings(_variable, _variable.annotation(), validPublicTags, "public state variables");
 		else
@@ -79,6 +114,15 @@ bool DocStringAnalyser::visit(VariableDeclaration const& _variable)
 				"Documentation tag @title and @author is only allowed on contract definitions. "
 				"It will be disallowed in 0.7.0."
 			);
+
+	if (CallableDeclaration const* baseFunction = resolveInheritDoc(_variable.annotation().baseFunctions, _variable, _variable.annotation()))
+		copyMissingTags(_variable.annotation(), baseFunction->annotation());
+	else if (
+		_variable.annotation().docTags.empty() &&
+		_variable.annotation().baseFunctions.size() == 1
+	)
+		copyMissingTags(_variable.annotation(), (*_variable.annotation().baseFunctions.begin())->annotation());
+
 	}
 	return false;
 }
@@ -139,9 +183,52 @@ void DocStringAnalyser::handleCallable(
 	StructurallyDocumentedAnnotation& _annotation
 )
 {
-	static set<string> const validTags = set<string>{"author", "dev", "notice", "return", "param"};
+	static set<string> const validTags = set<string>{"author", "dev", "notice", "return", "param", "inheritdoc"};
 	parseDocStrings(_node, _annotation, validTags, "functions");
 	checkParameters(_callable, _node, _annotation);
+
+	if (CallableDeclaration const* baseFunction = resolveInheritDoc(_callable.annotation().baseFunctions, _node, _annotation))
+		copyMissingTags(_annotation, baseFunction->annotation());
+	else if (
+		_annotation.docTags.empty() &&
+		_callable.annotation().baseFunctions.size() == 1 &&
+		parameterNamesEqual(_callable, **_callable.annotation().baseFunctions.begin())
+	)
+		copyMissingTags(_annotation, (*_callable.annotation().baseFunctions.begin())->annotation());
+}
+
+CallableDeclaration const* DocStringAnalyser::resolveInheritDoc(
+	std::set<CallableDeclaration const*>& _baseFuncs,
+	StructurallyDocumented const& _node,
+	StructurallyDocumentedAnnotation& _annotation
+)
+{
+	switch (_annotation.docTags.count("inheritdoc"))
+	{
+		default:
+			m_errorReporter.docstringParsingError(
+				5142_error,
+				_node.documentation()->location(),
+				"Documentation tag @inheritdoc can only reference one contract."
+			);
+			return nullptr;
+		case 0:
+			return nullptr;
+		case 1:
+			string const targetContractName = _annotation.docTags.find("inheritdoc")->second.content;
+
+			if (auto const callable = findBaseCallable(_baseFuncs, targetContractName))
+				return callable;
+
+			m_errorReporter.docstringParsingError(
+				1430_error,
+				_node.documentation()->location(),
+				"Documentation tag @inheritdoc references contract \"" +
+				targetContractName +
+				"\", but the contract doesn't exist or doesn't override this function."
+			);
+			return nullptr;
+	}
 }
 
 void DocStringAnalyser::parseDocStrings(

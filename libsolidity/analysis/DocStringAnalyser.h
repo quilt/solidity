@@ -56,6 +56,12 @@ private:
 		StructurallyDocumentedAnnotation& _annotation
 	);
 
+	CallableDeclaration const* resolveInheritDoc(
+		std::set<CallableDeclaration const*>& _baseFuncs,
+		StructurallyDocumented const& _node,
+		StructurallyDocumentedAnnotation& _annotation
+	);
+
 	void handleConstructor(
 		CallableDeclaration const& _callable,
 		StructurallyDocumented const& _node,
