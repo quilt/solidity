@@ -54,7 +54,7 @@ ExecutionFramework::ExecutionFramework(langutil::EVMVersion _evmVersion, std::ve
 	if (solidity::test::CommonOptions::get().optimize)
 		m_optimiserSettings = solidity::frontend::OptimiserSettings::standard();
 
-	for (auto const& path : _vmPaths)
+	for (auto const& path: _vmPaths)
 	{
 		evmc::VM& vm = EVMHost::getVM(path.string());
 		if (!m_evmHost && vm.has_capability(EVMC_CAPABILITY_EVM1))
@@ -78,12 +78,12 @@ void ExecutionFramework::reset(bool useEwasm)
 	if (useEwasm)
 	{
 		solAssert(supportsEwasm(), "");
-		m_evmcHost = m_ewasmHost;
+		m_evmcHost = m_ewasmHost.get();
 	}
 	else
 	{
 		solAssert(m_evmHost != nullptr, "");
-		m_evmcHost = m_evmHost;
+		m_evmcHost = m_evmHost.get();
 	}
 
 	m_evmcHost->reset();

@@ -278,7 +278,7 @@ protected:
 	solidity::frontend::OptimiserSettings m_optimiserSettings = solidity::frontend::OptimiserSettings::minimal();
 	bool m_showMessages = false;
 
-	std::shared_ptr<EVMHost> m_evmcHost;
+	EVMHost* m_evmcHost;
 
 	std::shared_ptr<EVMHost> m_evmHost;
 	std::shared_ptr<EVMHost> m_ewasmHost;
