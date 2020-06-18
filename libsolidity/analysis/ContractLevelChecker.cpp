@@ -225,19 +225,21 @@ void ContractLevelChecker::checkAbstractDefinitions(ContractDefinition const& _c
 	// not have inheritance for libraries.
 	if (
 		_contract.contractKind() == ContractKind::Contract &&
-		!_contract.abstract() &&
-		!_contract.annotation().unimplementedDeclarations.empty()
+		!_contract.abstract()
 	)
 	{
-		SecondarySourceLocation ssl;
-		for (auto declaration: _contract.annotation().unimplementedDeclarations)
-			ssl.append("Missing implementation: ", declaration->location());
-		m_errorReporter.typeError(
-			3656_error,
-			_contract.location(),
-			ssl,
-			"Contract \"" + _contract.annotation().canonicalName + "\" should be marked as abstract."
-		);
+		if (!_contract.annotation().unimplementedDeclarations.empty())
+		{
+			SecondarySourceLocation ssl;
+			for (auto declaration: _contract.annotation().unimplementedDeclarations)
+				ssl.append("Missing implementation: ", declaration->location());
+			m_errorReporter.typeError(
+				3656_error,
+				_contract.location(),
+				ssl,
+				"Contract \"" + _contract.annotation().canonicalName + "\" should be marked as abstract."
+			);
+		}
 	}
 }
 

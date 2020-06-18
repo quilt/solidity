@@ -340,45 +340,75 @@ bool TypeChecker::visit(FunctionDefinition const& _function)
 		if (_function.isOrdinary() && !_function.isPartOfExternalInterface())
 			m_errorReporter.typeError(5587_error, _function.location(), "Internal functions cannot be payable.");
 	}
+
+	vector<VariableDeclaration const*> internalParametersInConstructor;
+
 	auto checkArgumentAndReturnParameter = [&](VariableDeclaration const& var) {
 		if (type(var)->category() == Type::Category::Mapping)
 		{
 			if (var.referenceLocation() != VariableDeclaration::Location::Storage)
 			{
-				if (!_function.libraryFunction() && _function.isPublic())
+				if (!_function.libraryFunction() && _function.isPublic() && !_function.isConstructor())
 					m_errorReporter.typeError(3442_error, var.location(), "Mapping types can only have a data location of \"storage\" and thus only be parameters or return variables for internal or library functions.");
 				else
 					m_errorReporter.typeError(5380_error, var.location(), "Mapping types can only have a data location of \"storage\"." );
 			}
 			else
-				solAssert(_function.libraryFunction() || !_function.isPublic(), "Mapping types for parameters or return variables can only be used in internal or library functions.");
+			{
+				if (_function.isConstructor())
+					internalParametersInConstructor.emplace_back(&var);
+				else
+					solAssert(_function.libraryFunction() || !_function.isPublic(), "Mapping types for parameters or return variables can only be used in internal or library functions.");
+			}
 		}
 		else
 		{
-			if (!type(var)->canLiveOutsideStorage() && _function.isPublic())
-				m_errorReporter.typeError(3312_error, var.location(), "Type is required to live outside storage.");
-			if (_function.isPublic())
+			if (!type(var)->canLiveOutsideStorage())
+			{
+				if (_function.isConstructor())
+					internalParametersInConstructor.emplace_back(&var);
+				else if (_function.isPublic())
+					m_errorReporter.typeError(3312_error, var.location(), "Type is required to live outside storage.");
+			}
+			if (
+				(!_function.isConstructor() && _function.isPublic()) ||
+				(_function.isConstructor() && !m_currentContract->abstract())
+			)
 			{
 				auto iType = type(var)->interfaceType(_function.libraryFunction());
 
 				if (!iType)
 				{
-					solAssert(!iType.message().empty(), "Expected detailed error message!");
-					m_errorReporter.fatalTypeError(4103_error, var.location(), iType.message());
+					string message = iType.message();
+					solAssert(!message.empty(), "Expected detailed error message!");
+					if (_function.isConstructor())
+						message += " You can make the contract abstract to avoid this problem.";
+					m_errorReporter.fatalTypeError(4103_error, var.location(), message);
 				}
 			}
 		}
 		if (
-			_function.isPublic() &&
+			(
+				(!_function.isConstructor() && _function.isPublic()) ||
+				(_function.isConstructor() && !m_currentContract->abstract())
+			) &&
 			!experimentalFeatureActive(ExperimentalFeature::ABIEncoderV2) &&
 			!typeSupportedByOldABIEncoder(*type(var), _function.libraryFunction())
 		)
+		{
+			string message =
+				"This type is only supported in ABIEncoderV2. "
+				"Use \"pragma experimental ABIEncoderV2;\" to enable the feature.";
+			if (_function.isConstructor())
+				message +=
+					" Alternatively, make the contract abstract and supply the "
+					"constructor arguments from a derived contract.";
 			m_errorReporter.typeError(
 				4957_error,
 				var.location(),
-				"This type is only supported in ABIEncoderV2. "
-				"Use \"pragma experimental ABIEncoderV2;\" to enable the feature."
+				message
 			);
+		}
 	};
 	for (ASTPointer<VariableDeclaration> const& var: _function.parameters())
 	{
@@ -390,6 +420,24 @@ bool TypeChecker::visit(FunctionDefinition const& _function)
 		checkArgumentAndReturnParameter(*var);
 		var->accept(*this);
 	}
+
+	if (_function.isConstructor() && !internalParametersInConstructor.empty() && !m_currentContract->abstract())
+	{
+		SecondarySourceLocation secondary;
+		for (VariableDeclaration const* var: internalParametersInConstructor)
+			secondary.append(
+				"This parameter has a type that con only be used internally.",
+				var->location()
+			);
+		m_errorReporter.typeError(
+			3644_error,
+			_function.location(),
+			secondary,
+			"The contract has to be marked abstract because the constructor uses internal parameter types."
+		);
+
+	}
+
 	set<Declaration const*> modifiers;
 	for (ASTPointer<ModifierInvocation> const& modifier: _function.modifiers())
 	{
