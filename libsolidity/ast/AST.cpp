@@ -288,6 +288,12 @@ bool FunctionDefinition::libraryFunction() const
 	return false;
 }
 
+Visibility FunctionDefinition::defaultVisibility() const
+{
+	solAssert(!isConstructor(), "");
+	return Declaration::defaultVisibility();
+}
+
 FunctionTypePointer FunctionDefinition::functionType(bool _internal) const
 {
 	if (_internal)
@@ -597,6 +603,17 @@ bool VariableDeclaration::isEventParameter() const
 	return dynamic_cast<EventDefinition const*>(scope()) != nullptr;
 }
 
+bool VariableDeclaration::isConstructorParameter() const
+{
+	if (!isCallableOrCatchParameter())
+		return false;
+
+	if (auto const* fun = dynamic_cast<FunctionDefinition const*>(scope()))
+		return fun->isConstructor();
+
+	return false;
+}
+
 bool VariableDeclaration::hasReferenceOrMappingType() const
 {
 	solAssert(typeName(), "");
@@ -614,7 +631,12 @@ set<VariableDeclaration::Location> VariableDeclaration::allowedDataLocations() c
 	else if (isCallableOrCatchParameter())
 	{
 		set<Location> locations{ Location::Memory };
-		if (isInternalCallableParameter() || isLibraryFunctionParameter() || isTryCatchParameter())
+		if (
+			isConstructorParameter() ||
+			isInternalCallableParameter() ||
+			isLibraryFunctionParameter() ||
+			isTryCatchParameter()
+		)
 			locations.insert(Location::Storage);
 		if (!isTryCatchParameter())
 			locations.insert(Location::CallData);
