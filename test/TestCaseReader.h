@@ -31,6 +31,7 @@ class TestCaseReader
 public:
 	TestCaseReader() = default;
 	explicit TestCaseReader(std::string const& _filename);
+	explicit TestCaseReader(std::istringstream const& _testCode);
 
 	std::map<std::string, std::string> const& sources() { return m_sources; }
 	std::string const& source();
