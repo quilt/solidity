@@ -3,12 +3,12 @@ pragma experimental SMTChecker;
 contract C {
 	uint x = 5;
 
-	constructor(uint a, uint b) public {
+	constructor(uint a, uint b) {
 		assert(x == 5);
 		x = a + b;
 	}
 
-	function f(uint y) public view {
+	function f(uint y) view {
 		assert(y == x);
 	}
 }

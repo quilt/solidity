@@ -1,13 +1,13 @@
 pragma experimental SMTChecker;
 contract C {
 	uint a;
-	constructor(uint x) public {
+	constructor(uint x) {
 		a = x;
 	}
 }
 
 contract A is C {
-	constructor() C(2) public {
+	constructor() C(2) {
 		assert(a == 0);
 		assert(C.a == 0);
 	}

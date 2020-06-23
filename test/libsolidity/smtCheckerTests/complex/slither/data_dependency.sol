@@ -46,7 +46,7 @@ contract SolidityVar{
     address addr_1;
     address addr_2;
 
-    constructor() public{
+    constructor(){
         addr_1 = msg.sender;
     }
 

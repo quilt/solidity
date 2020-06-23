@@ -1,7 +1,7 @@
 pragma experimental SMTChecker;
 contract C {
     function f() public pure {}
-    constructor() public {
+    constructor() {
         C c = this;
         c.f(); // this does not warn now, but should warn in the future
         this.f();

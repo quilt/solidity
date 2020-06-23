@@ -5,7 +5,7 @@ contract B {
 }
 
 contract C is B {
-	constructor() public {
+	constructor() {
 		assert(x == 5);
 		x = 10;
 	}

@@ -2,7 +2,7 @@ pragma experimental SMTChecker;
 
 contract C{
     uint x;
-	constructor(uint y) public {
+	constructor(uint y) {
 		assert(x == 0);
 		x = 1;
 	}

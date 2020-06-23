@@ -5,14 +5,14 @@ contract A {
 }
 
 contract B is A {
-	constructor() public { x = 2; }
+	constructor() { x = 2; }
 }
 
 contract C is B {
 }
 
 contract D is C {
-	constructor() public {
+	constructor() {
 		assert(x == 2);
 		assert(x == 3);
 	}

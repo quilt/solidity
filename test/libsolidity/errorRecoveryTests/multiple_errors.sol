@@ -6,7 +6,7 @@
 pragma solidity >=0.0.0;
 
 contract Error4 {
-  constructor() public {
+  constructor() {
     balances[tx.origin] = 1 2; // missing operator
   }
 

@@ -1024,7 +1024,7 @@ BOOST_AUTO_TEST_CASE(user_constructor)
 	char const* sourceCode = R"(
 		contract test {
 			/// @notice this is a really nice constructor
-			constructor(uint a, uint second) public { }
+			constructor(uint a, uint second) { }
 		}
 	)";
 
@@ -1044,7 +1044,7 @@ BOOST_AUTO_TEST_CASE(user_constructor_and_function)
 	char const* sourceCode = R"(
 		contract test {
 			/// @notice this is a really nice constructor
-			constructor(uint a, uint second) public { }
+			constructor(uint a, uint second) { }
 			/// another multiplier
 			function mul(uint a, uint second) public returns(uint d) { return a * 7 + second; }
 		}
@@ -1071,7 +1071,7 @@ BOOST_AUTO_TEST_CASE(dev_constructor)
 			/// @author Alex
 			/// @param a the parameter a is really nice and very useful
 			/// @param second the second parameter is not very useful, it just provides additional confusion
-			constructor(uint a, uint second) public { }
+			constructor(uint a, uint second) { }
 		}
 	)";
 
@@ -1098,7 +1098,7 @@ BOOST_AUTO_TEST_CASE(dev_constructor_return)
 			/// @param a the parameter a is really nice and very useful
 			/// @param second the second parameter is not very useful, it just provides additional confusion
 			/// @return return should not work within constructors
-			constructor(uint a, uint second) public { }
+			constructor(uint a, uint second) { }
 		}
 	)";
 
@@ -1112,7 +1112,7 @@ BOOST_AUTO_TEST_CASE(dev_constructor_and_function)
 			/// @author Alex
 			/// @param a the parameter a is really nice and very useful
 			/// @param second the second parameter is not very useful, it just provides additional confusion
-			constructor(uint a, uint second) public { }
+			constructor(uint a, uint second) { }
 			/// @dev Multiplies a number by 7 and adds second parameter
 			/// @param a Documentation for the first parameter starts here.
 			/// Since it's a really complicated parameter we need 2 lines

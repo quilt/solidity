@@ -1,25 +1,25 @@
 pragma experimental SMTChecker;
 contract F {
 	uint a;
-	constructor(uint x) public {
+	constructor(uint x) {
 		a = x;
 	}
 }
 
 abstract contract E is F {}
 abstract contract D is E {
-	constructor() public {
+	constructor() {
 		a = 3;
 	}
 }
 abstract contract C is D {}
 contract B is C {
-	constructor(uint x) F(x + 1) public {
+	constructor(uint x) F(x + 1) {
 	}
 }
 
 contract A is B {
-	constructor(uint x) B(x) public {
+	constructor(uint x) B(x) {
 		assert(a == 3);
 		assert(a == 4);
 	}

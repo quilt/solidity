@@ -11,7 +11,7 @@ contract C is A {
 }
 
 contract D is B, C {
-	constructor() public {
+	constructor() {
 		assert(x == 2);
 		assert(x == 3);
 	}
