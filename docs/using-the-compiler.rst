@@ -721,7 +721,8 @@ The command above applies all changes as shown below. Please review them careful
 .. code-block:: solidity
 
     // SPDX-License-Identifier: GPL-3.0
-    pragma solidity >=0.6.0 <0.8.0;
+    // This will not compile after 0.7.0
+    pragma solidity >=0.6.0 <0.7.0;
 
     abstract contract Updateable {
         function run() public view virtual returns (bool);
