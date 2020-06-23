@@ -16,7 +16,7 @@ contract Test {
     B storageB;
     C storageC;
     D storageD;
-    constructor() public {
+    constructor() {
         storageA.m[1] = 2;
         storageB.m[3] = 4;
         storageB.x = 5;
