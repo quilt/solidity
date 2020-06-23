@@ -97,7 +97,7 @@ registering with a username and password, all you need is an Ethereum keypair.
 
         // Constructor code is only run when the contract
         // is created
-        constructor() public {
+        constructor() {
             minter = msg.sender;
         }
 
@@ -186,7 +186,7 @@ and any user interface calls the automatically generated ``balances`` function f
 
 .. index:: coin
 
-The :ref:`constructor<constructor>` is a special function run during the creation of the contract and
+The :ref:`constructor<constructor>` is a special function that is executed during the creation of the contract and
 cannot be called afterwards. In this case, it permanently stores the address of the person creating the
 contract. The ``msg`` variable (together with ``tx`` and ``block``) is a
 :ref:`special global variable <special-variables-functions>` that
