@@ -195,6 +195,13 @@ void DocStringAnalyser::handleCallable(
 		parameterNamesEqual(_callable, **_callable.annotation().baseFunctions.begin())
 	)
 		copyMissingTags(_annotation, (*_callable.annotation().baseFunctions.begin())->annotation());
+
+	if (_node.documentation() && _annotation.docTags.count("author") > 0)
+		m_errorReporter.warning(
+			9843_error, _node.documentation()->location(),
+			"Documentation tag @author is only allowed on contract definitions. "
+			"It will be disallowed in 0.7.0."
+		);
 }
 
 CallableDeclaration const* DocStringAnalyser::resolveInheritDoc(
