@@ -274,6 +274,14 @@ public:
 	{
 		return regex_replace(_location.text(), std::regex{"now"}, "block.timestamp");
 	}
+
+	static std::string removeVisibility(langutil::SourceLocation const& _location)
+	{
+		std::string replacement = _location.text();
+		for (auto const& replace: {"public ", "public", "internal ", "internal"})
+			replacement = regex_replace(replacement, std::regex{replace}, "");
+		return replacement;
+	}
 };
 
 }

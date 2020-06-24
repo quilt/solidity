@@ -59,3 +59,16 @@ void NowKeyword::endVisit(Identifier const& _identifier)
 			);
 		}
 }
+
+void ConstructorVisibility::endVisit(ContractDefinition const& _contract)
+{
+	// TODO If constructor is internal, maybe it makes sense to change contract to abstract. But
+	// function->visibility() throws for constructors.
+	for (FunctionDefinition const* function: _contract.definedFunctions())
+		if (function->isConstructor() && !function->noVisibilitySpecified())
+			m_changes.emplace_back(
+				UpgradeChange::Level::Safe,
+				function->location(),
+				SourceTransform::removeVisibility(function->location())
+			);
+}
