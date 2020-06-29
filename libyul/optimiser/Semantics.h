@@ -24,7 +24,6 @@
 #include <libyul/SideEffects.h>
 #include <libyul/optimiser/CallGraphGenerator.h>
 #include <libyul/AsmData.h>
-#include <iostream>
 
 #include <set>
 
@@ -63,7 +62,9 @@ public:
 	{
 		if (movable())
 			return true;
-		else if (movableIfStateInvariant() && !_blockSideEffects.invalidatesStorage())
+		else if (movableIfStateInvariant() && !_blockSideEffects.invalidatesState())
+			return true;
+		else if (movableIfStorageInvariant() && !_blockSideEffects.invalidatesStorage())
 			return true;
 		else if (
 			movableIfMemoryInvariant() &&
@@ -75,6 +76,7 @@ public:
 		return false;
 	}
 	bool movableIfStateInvariant() const { return m_sideEffects.movableIfStateInvariant; }
+	bool movableIfStorageInvariant() const { return m_sideEffects.movableIfStorageInvariant; }
 	bool movableIfMemoryInvariant() const { return m_sideEffects.movableIfMemoryInvariant; }
 	bool sideEffectFree(bool _allowMSizeModification = false) const
 	{
@@ -84,6 +86,7 @@ public:
 			return m_sideEffects.sideEffectFree;
 	}
 	bool sideEffectFreeIfNoMSize() const { return m_sideEffects.sideEffectFreeIfNoMSize; }
+	bool invalidatesState() const { return m_sideEffects.invalidatesState; }
 	bool invalidatesStorage() const { return m_sideEffects.invalidatesStorage; }
 	bool invalidatesMemory() const { return m_sideEffects.invalidatesMemory; }
 	bool containsMSize() const { return m_sideEffects.containsMSize; }

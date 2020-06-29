@@ -106,6 +106,7 @@ map<YulString, SideEffects> SideEffectsPropagator::sideEffects(
 	{
 		ret[function].movable = false;
 		ret[function].movableIfStateInvariant = false;
+		ret[function].movableIfStorageInvariant = false;
 		ret[function].movableIfMemoryInvariant = false;
 		ret[function].sideEffectFree = false;
 		ret[function].sideEffectFreeIfNoMSize = false;
@@ -127,6 +128,7 @@ map<YulString, SideEffects> SideEffectsPropagator::sideEffects(
 		{
 			ret[call.first].movable = false;
 			ret[call.first].movableIfStateInvariant = false;
+			ret[call.first].movableIfStorageInvariant = false;
 			ret[call.first].movableIfMemoryInvariant = false;
 			ret[call.first].sideEffectFree = false;
 			ret[call.first].sideEffectFreeIfNoMSize = false;
