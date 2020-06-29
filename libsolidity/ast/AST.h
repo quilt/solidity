@@ -465,14 +465,16 @@ public:
 		std::vector<ASTPointer<InheritanceSpecifier>> _baseContracts,
 		std::vector<ASTPointer<ASTNode>> _subNodes,
 		ContractKind _contractKind = ContractKind::Contract,
-		bool _abstract = false
+		bool _abstract = false,
+		bool _isAccountAbstraction = false
 	):
 		Declaration(_id, _location, _name),
 		StructurallyDocumented(_documentation),
 		m_baseContracts(std::move(_baseContracts)),
 		m_subNodes(std::move(_subNodes)),
 		m_contractKind(_contractKind),
-		m_abstract(_abstract)
+		m_abstract(_abstract),
+		m_isAccountAbstraction(_isAccountAbstraction)
 	{}
 
 	void accept(ASTVisitor& _visitor) override;
@@ -527,6 +529,8 @@ public:
 
 	bool abstract() const { return m_abstract; }
 
+	bool isAccountAbstraction() const { return m_isAccountAbstraction; }
+
 	ContractDefinition const* superContract(ContractDefinition const& _mostDerivedContract) const;
 	/// @returns the next constructor in the inheritance hierarchy.
 	FunctionDefinition const* nextConstructor(ContractDefinition const& _mostDerivedContract) const;
@@ -536,6 +540,7 @@ private:
 	std::vector<ASTPointer<ASTNode>> m_subNodes;
 	ContractKind m_contractKind;
 	bool m_abstract{false};
+	bool m_isAccountAbstraction{false};
 
 	util::LazyInit<std::vector<std::pair<util::FixedHash<4>, FunctionTypePointer>>> m_interfaceFunctionList[2];
 	util::LazyInit<std::vector<EventDefinition const*>> m_interfaceEvents;

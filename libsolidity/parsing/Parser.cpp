@@ -94,6 +94,7 @@ ASTPointer<SourceUnit> Parser::parse(shared_ptr<Scanner> const& _scanner)
 			case Token::Import:
 				nodes.push_back(parseImportDirective());
 				break;
+			case Token::Account:
 			case Token::Abstract:
 			case Token::Interface:
 			case Token::Contract:
@@ -262,13 +263,19 @@ ASTPointer<ImportDirective> Parser::parseImportDirective()
 	return nodeFactory.createNode<ImportDirective>(path, unitAlias, move(symbolAliases));
 }
 
-std::pair<ContractKind, bool> Parser::parseContractKind()
+std::tuple<ContractKind, bool, bool> Parser::parseContractKind()
 {
 	ContractKind kind;
 	bool abstract = false;
 	if (m_scanner->currentToken() == Token::Abstract)
 	{
 		abstract = true;
+		m_scanner->next();
+	}
+	bool isAccountAbstraction = false;
+	if (m_scanner->currentToken() == Token::Account)
+	{
+		isAccountAbstraction = true;
 		m_scanner->next();
 	}
 	switch (m_scanner->currentToken())
@@ -284,10 +291,10 @@ std::pair<ContractKind, bool> Parser::parseContractKind()
 		break;
 	default:
 		parserError(3515_error, "Expected keyword \"contract\", \"interface\" or \"library\".");
-		return std::make_pair(ContractKind::Contract, abstract);
+		return std::make_tuple(ContractKind::Contract, abstract, isAccountAbstraction);
 	}
 	m_scanner->next();
-	return std::make_pair(kind, abstract);
+	return std::make_tuple(kind, abstract, isAccountAbstraction);
 }
 
 ASTPointer<ContractDefinition> Parser::parseContractDefinition()
@@ -298,7 +305,7 @@ ASTPointer<ContractDefinition> Parser::parseContractDefinition()
 	ASTPointer<StructuredDocumentation> documentation;
 	vector<ASTPointer<InheritanceSpecifier>> baseContracts;
 	vector<ASTPointer<ASTNode>> subNodes;
-	std::pair<ContractKind, bool> contractKind{};
+	std::tuple<ContractKind, bool, bool> contractKind{};
 	try
 	{
 		documentation = parseStructuredDocumentation();
@@ -371,8 +378,9 @@ ASTPointer<ContractDefinition> Parser::parseContractDefinition()
 		documentation,
 		baseContracts,
 		subNodes,
-		contractKind.first,
-		contractKind.second
+		std::get<0>(contractKind),
+		std::get<1>(contractKind),
+		std::get<2>(contractKind)
 	);
 }
 
