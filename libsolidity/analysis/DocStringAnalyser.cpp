@@ -32,6 +32,30 @@ using namespace solidity;
 using namespace solidity::langutil;
 using namespace solidity::frontend;
 
+namespace
+{
+
+void copyMissingTags(StructurallyDocumentedAnnotation& _target, CallableDeclarationAnnotation const& _source)
+{
+	auto& sourceDoc = dynamic_cast<StructurallyDocumentedAnnotation const&>(_source);
+
+	set<string> existingTags;
+
+	for (auto const& iterator: _target.docTags)
+		existingTags.insert(iterator.first);
+
+	for (auto const& [tag, content]: sourceDoc.docTags)
+		if (tag != "inheritdoc" && !existingTags.count(tag))
+			_target.docTags.emplace(tag, content);
+}
+
+bool parameterNamesEqual(CallableDeclaration const& _a, CallableDeclaration const& _b)
+{
+	return boost::range::equal(_a.parameters(), _b.parameters(), [](auto const& pa, auto const& pb) { return pa->name() == pb->name(); });
+}
+
+}
+
 bool DocStringAnalyser::analyseDocStrings(SourceUnit const& _sourceUnit)
 {
 	auto errorWatcher = m_errorReporter.errorWatcher();
@@ -79,6 +103,13 @@ bool DocStringAnalyser::visit(VariableDeclaration const& _variable)
 				"Documentation tag @title and @author is only allowed on contract definitions. "
 				"It will be disallowed in 0.7.0."
 			);
+
+	if (
+		_variable.annotation().docTags.empty() &&
+		_variable.annotation().baseFunctions.size() == 1
+	)
+		copyMissingTags(_variable.annotation(), (*_variable.annotation().baseFunctions.begin())->annotation());
+
 	}
 	return false;
 }
@@ -142,6 +173,13 @@ void DocStringAnalyser::handleCallable(
 	static set<string> const validTags = set<string>{"author", "dev", "notice", "return", "param"};
 	parseDocStrings(_node, _annotation, validTags, "functions");
 	checkParameters(_callable, _node, _annotation);
+
+	if (
+		_annotation.docTags.empty() &&
+		_callable.annotation().baseFunctions.size() == 1 &&
+		parameterNamesEqual(_callable, **_callable.annotation().baseFunctions.begin())
+	)
+		copyMissingTags(_annotation, (*_callable.annotation().baseFunctions.begin())->annotation());
 
 	if (_node.documentation() && _annotation.docTags.count("author") > 0)
 		m_errorReporter.warning(
