@@ -232,6 +232,8 @@ public:
 	/// Appends a zero-address that can be replaced by something else at deploy time (if the
 	/// position in bytecode is known).
 	void appendDeployTimeAddress() { m_asm->append(evmasm::PushDeployTimeAddress); }
+	/// Appends a placeholder for the AA prefix
+	void appendAccountAbstractionPrefix() { m_asm->append(evmasm::AccountAbstractionPrefix); }
 	/// Resets the stack of visited nodes with a new stack having only @c _node
 	void resetVisitedNodes(ASTNode const* _node);
 	/// Pops the stack of visited nodes

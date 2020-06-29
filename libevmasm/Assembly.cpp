@@ -38,6 +38,11 @@ using namespace solidity::evmasm;
 using namespace solidity::langutil;
 using namespace solidity::util;
 
+const uint8_t accountAbstractionPrefix[37] = {0x33, 0x73, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+											  0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x14, 0x60,
+											  0x24, 0x57, 0x36, 0x60, 0x1f, 0x57, 0x00, 0x5b, 0x60, 0x00, 0x80, 0xfd,
+											  0x5b};
+
 AssemblyItem const& Assembly::append(AssemblyItem const& _i)
 {
 	assertThrow(m_deposit >= 0, AssemblyException, "Stack underflow.");
@@ -680,6 +685,9 @@ LinkerObject const& Assembly::assemble() const
 		case PushDeployTimeAddress:
 			ret.bytecode.push_back(uint8_t(Instruction::PUSH20));
 			ret.bytecode.resize(ret.bytecode.size() + 20);
+			break;
+		case AccountAbstractionPrefix:
+			ret.bytecode.insert(ret.bytecode.end(), accountAbstractionPrefix, accountAbstractionPrefix+37);
 			break;
 		case Tag:
 			assertThrow(i.data() != 0, AssemblyException, "Invalid tag position.");

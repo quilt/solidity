@@ -46,7 +46,8 @@ enum AssemblyItemType {
 	PushLibraryAddress, ///< Push a currently unknown address of another (library) contract.
 	PushDeployTimeAddress, ///< Push an address to be filled at deploy time. Should not be touched by the optimizer.
 	PushImmutable, ///< Push the currently unknown value of an immutable variable. The actual value will be filled in by the constructor.
-	AssignImmutable ///< Assigns the current value on the stack to an immutable variable. Only valid during creation code.
+	AssignImmutable, ///< Assigns the current value on the stack to an immutable variable. Only valid during creation code.
+	AccountAbstractionPrefix ///< Account abstraction prefix.
 };
 
 class Assembly;
