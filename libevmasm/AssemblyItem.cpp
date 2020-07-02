@@ -88,7 +88,7 @@ unsigned AssemblyItem::bytesRequired(unsigned _addressLength) const
 		else
 			return 1 + (3 + 32) * 1024; // 1024 occurrences are beyond the maximum code size anyways.
 	case AccountAbstractionPrefix:
-		return 35;
+		return sizeof(aaPrefixBytecode);
 	default:
 		break;
 	}
