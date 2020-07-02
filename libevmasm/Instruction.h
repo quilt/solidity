@@ -174,6 +174,8 @@ enum class Instruction: uint8_t
 	LOG3,				///< Makes a log entry; 3 topics.
 	LOG4,				///< Makes a log entry; 4 topics.
 
+	PAYGAS = 0xaa,		///< Sets the gas price for the account abstraction transaction.
+
 	JUMPTO = 0xb0,      ///< alter the program counter to a jumpdest -- not part of Instructions.cpp
 	JUMPIF,             ///< conditionally alter the program counter -- not part of Instructions.cpp
 	JUMPV,              ///< alter the program counter to a jumpdest -- not part of Instructions.cpp

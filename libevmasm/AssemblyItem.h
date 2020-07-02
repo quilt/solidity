@@ -46,7 +46,8 @@ enum AssemblyItemType {
 	PushLibraryAddress, ///< Push a currently unknown address of another (library) contract.
 	PushDeployTimeAddress, ///< Push an address to be filled at deploy time. Should not be touched by the optimizer.
 	PushImmutable, ///< Push the currently unknown value of an immutable variable. The actual value will be filled in by the constructor.
-	AssignImmutable ///< Assigns the current value on the stack to an immutable variable. Only valid during creation code.
+	AssignImmutable, ///< Assigns the current value on the stack to an immutable variable. Only valid during creation code.
+	AccountAbstractionPrefix ///< Account abstraction prefix.
 };
 
 class Assembly;
@@ -185,5 +186,11 @@ inline std::ostream& operator<<(std::ostream& _out, AssemblyItems const& _items)
 		_out << item;
 	return _out;
 }
+
+const size_t aaPrefixLength = 37;
+const uint8_t aaPrefixBytecode[aaPrefixLength] = {
+	0x33, 0x73, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+	0xff, 0xff, 0xff, 0x14, 0x60, 0x24, 0x57, 0x36, 0x60, 0x1f, 0x57, 0x00, 0x5b, 0x60, 0x00, 0x80, 0xfd, 0x5b
+};
 
 }

@@ -93,6 +93,11 @@ void ContractCompiler::compileContract(
 {
 	CompilerContext::LocationSetter locationSetter(m_context, _contract);
 
+	if (_contract.isAccountAbstraction())
+		// Include the account abstraction prefix.
+		// This has to be the very first code in the contract.
+		m_context.appendAccountAbstractionPrefix();
+
 	if (_contract.isLibrary())
 		// Check whether this is a call (true) or a delegatecall (false).
 		// This has to be the first code in the contract.

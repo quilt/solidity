@@ -681,6 +681,9 @@ LinkerObject const& Assembly::assemble() const
 			ret.bytecode.push_back(uint8_t(Instruction::PUSH20));
 			ret.bytecode.resize(ret.bytecode.size() + 20);
 			break;
+		case AccountAbstractionPrefix:
+			ret.bytecode.insert(ret.bytecode.end(), aaPrefixBytecode, aaPrefixBytecode+aaPrefixLength);
+			break;
 		case Tag:
 			assertThrow(i.data() != 0, AssemblyException, "Invalid tag position.");
 			assertThrow(i.splitForeignPushTag().first == numeric_limits<size_t>::max(), AssemblyException, "Foreign tag.");

@@ -143,6 +143,7 @@ namespace solidity::langutil
 	/* Inline Assembly Operators */                                    \
 	T(AssemblyAssign, ":=", 2)                                         \
 	/* Keywords */                                                     \
+	K(Account, "account", 0)                                           \
 	K(Abstract, "abstract", 0)                                         \
 	K(Anonymous, "anonymous", 0)                                       \
 	K(As, "as", 0)                                                     \

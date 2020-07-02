@@ -60,6 +60,7 @@ bool ContractLevelChecker::check(ContractDefinition const& _contract)
 	checkLibraryRequirements(_contract);
 	checkBaseABICompatibility(_contract);
 	checkPayableFallbackWithoutReceive(_contract);
+	checkAccountAbstractionRequirements(_contract);
 
 	return Error::containsOnlyWarnings(m_errorReporter.errors());
 }
@@ -457,4 +458,18 @@ void ContractLevelChecker::checkPayableFallbackWithoutReceive(ContractDefinition
 				"This contract has a payable fallback function, but no receive ether function. Consider adding a receive ether function.",
 				SecondarySourceLocation{}.append("The payable fallback function is defined here.", fallback->location())
 			);
+}
+
+void ContractLevelChecker::checkAccountAbstractionRequirements(ContractDefinition const& _contract)
+{
+	if (!_contract.isAccountAbstraction())
+		return;
+
+	if (!_contract.sourceUnit().annotation().experimentalFeatures.count(ExperimentalFeature::AccountAbstraction))
+		m_errorReporter.typeError(
+			0000_error,
+			_contract.location(),
+			"Account abstraction is only supported as an experimental feature. "
+			"Use \"pragma experimental AccountAbstraction;\" to enable the feature."
+		);
 }

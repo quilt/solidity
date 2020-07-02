@@ -85,7 +85,7 @@ private:
 	ASTPointer<ImportDirective> parseImportDirective();
 	/// @returns an std::pair<ContractKind, bool>, where
 	/// result.second is set to true, if an abstract contract was parsed, false otherwise.
-	std::pair<ContractKind, bool> parseContractKind();
+	std::tuple<ContractKind, bool, bool> parseContractKind();
 	ASTPointer<ContractDefinition> parseContractDefinition();
 	ASTPointer<InheritanceSpecifier> parseInheritanceSpecifier();
 	Visibility parseVisibilitySpecifier();
