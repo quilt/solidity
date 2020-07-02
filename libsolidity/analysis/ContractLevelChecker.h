@@ -84,6 +84,9 @@ private:
 	/// Warns if the contract has a payable fallback, but no receive ether function.
 	void checkPayableFallbackWithoutReceive(ContractDefinition const& _contract);
 
+    /// Checks that experimental account abstraction is enabled if this is an account abstraction contract.
+    void checkAccountAbstractionRequirements(ContractDefinition const& _contract);
+
 	OverrideChecker m_overrideChecker;
 	langutil::ErrorReporter& m_errorReporter;
 };
