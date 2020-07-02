@@ -682,7 +682,7 @@ LinkerObject const& Assembly::assemble() const
 			ret.bytecode.resize(ret.bytecode.size() + 20);
 			break;
 		case AccountAbstractionPrefix:
-			ret.bytecode.insert(ret.bytecode.end(), aaPrefixBytecode, aaPrefixBytecode+sizeof(aaPrefixBytecode));
+			ret.bytecode.insert(ret.bytecode.end(), aaPrefixBytecode, aaPrefixBytecode+aaPrefixLength);
 			break;
 		case Tag:
 			assertThrow(i.data() != 0, AssemblyException, "Invalid tag position.");
