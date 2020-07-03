@@ -467,7 +467,7 @@ void ContractLevelChecker::checkAccountAbstractionRequirements(ContractDefinitio
 
 	if (!_contract.sourceUnit().annotation().experimentalFeatures.count(ExperimentalFeature::AccountAbstraction))
 		m_errorReporter.typeError(
-			0000_error,
+			5537_error,
 			_contract.location(),
 			"Account abstraction is only supported as an experimental feature. "
 			"Use \"pragma experimental AccountAbstraction;\" to enable the feature."
