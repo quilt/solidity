@@ -192,6 +192,8 @@ enum class Instruction: uint8_t
 	RETURN,				///< halt execution returning output data
 	DELEGATECALL,		///< like CALLCODE but keeps caller's value and sender
 	CREATE2 = 0xf5,		///< create new account with associated code at address `sha3(0xff + sender + salt + init code) % 2**160`
+	AUTHORIZE = 0xf8,
+	AUTHORIZEDCALL = 0xf9,
 	STATICCALL = 0xfa,	///< like CALL but disallow state modifications
 
 	REVERT = 0xfd,		///< halt execution, revert state and return output data
