@@ -257,7 +257,7 @@ u256 EVMInstructionInterpreter::eval(
 		return m_state.difficulty;
 	case Instruction::GASLIMIT:
 		return m_state.gaslimit;
-	case Instruction::AUTHORIZE:
+	case Instruction::AUTH:
 		logTrace(_instruction, arg);
 		return u160(0xeeeeee + arg[1]);
 	// --------------- memory / storage / logs ---------------
@@ -314,7 +314,6 @@ u256 EVMInstructionInterpreter::eval(
 		return u160(0xdddddd + arg[1]);
 	case Instruction::CALL:
 	case Instruction::CALLCODE:
-	case Instruction::AUTHORIZEDCALL:
 		// TODO assign returndata
 		accessMemory(arg[3], arg[4]);
 		accessMemory(arg[5], arg[6]);
@@ -326,6 +325,12 @@ u256 EVMInstructionInterpreter::eval(
 		accessMemory(arg[4], arg[5]);
 		logTrace(_instruction, arg);
 		return 0;
+	case Instruction::AUTHCALL:
+		// TODO assign returndata
+		accessMemory(arg[4], arg[5]);
+		accessMemory(arg[6], arg[7]);
+		logTrace(_instruction, arg);
+		return arg[0] & 1;
 	case Instruction::RETURN:
 	{
 		bytes data;

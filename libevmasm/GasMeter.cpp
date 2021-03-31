@@ -140,7 +140,7 @@ GasMeter::GasConsumption GasMeter::estimateMax(AssemblyItem const& _item, bool _
 		case Instruction::CALLCODE:
 		case Instruction::DELEGATECALL:
 		case Instruction::STATICCALL:
-		case Instruction::AUTHORIZEDCALL:
+		case Instruction::AUTHCALL:
 		{
 			if (_includeExternalCosts)
 				// We assume that we do not know the target contract and thus, the consumption is infinite.
@@ -152,13 +152,15 @@ GasMeter::GasConsumption GasMeter::estimateMax(AssemblyItem const& _item, bool _
 					gas += (*value);
 				else
 					gas = GasConsumption::infinite();
-				if (_item.instruction() == Instruction::CALL || _item.instruction() == Instruction::AUTHORIZEDCALL)
+				if (_item.instruction() == Instruction::CALL || _item.instruction() == Instruction::AUTHCALL)
 					gas += GasCosts::callNewAccountGas; // We very rarely know whether the address exists.
 				int valueSize = 1;
 				if (_item.instruction() == Instruction::DELEGATECALL || _item.instruction() == Instruction::STATICCALL)
 					valueSize = 0;
 				else if (!classes.knownZero(m_state->relativeStackElement(-1 - valueSize)))
 					gas += GasCosts::callValueTransferGas;
+				if (_item.instruction() == Instruction::AUTHCALL)
+					valueSize = 2;
 				gas += memoryGas(-2 - valueSize, -3 - valueSize);
 				gas += memoryGas(-4 - valueSize, -5 - valueSize);
 			}
@@ -202,7 +204,7 @@ GasMeter::GasConsumption GasMeter::estimateMax(AssemblyItem const& _item, bool _
 		case Instruction::SELFBALANCE:
 			gas = runGas(Instruction::SELFBALANCE);
 			break;
-		case Instruction::AUTHORIZE:
+		case Instruction::AUTH:
 			gas = GasCosts::authorizeGas;
 			break;
 		default:

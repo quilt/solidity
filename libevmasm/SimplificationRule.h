@@ -147,8 +147,8 @@ struct EVMBuiltins
 	static auto constexpr RETURN = PatternGenerator<Instruction::RETURN>{};
 	static auto constexpr DELEGATECALL = PatternGenerator<Instruction::DELEGATECALL>{};
 	static auto constexpr CREATE2 = PatternGenerator<Instruction::CREATE2>{};
-	static auto constexpr AUTHORIZE = PatternGenerator<Instruction::AUTHORIZE>{};
-	static auto constexpr AUTHORIZEDCALL = PatternGenerator<Instruction::AUTHORIZEDCALL>{};
+	static auto constexpr AUTH = PatternGenerator<Instruction::AUTH>{};
+	static auto constexpr AUTHCALL = PatternGenerator<Instruction::AUTHCALL>{};
 	static auto constexpr REVERT = PatternGenerator<Instruction::REVERT>{};
 	static auto constexpr INVALID = PatternGenerator<Instruction::INVALID>{};
 	static auto constexpr SELFDESTRUCT = PatternGenerator<Instruction::SELFDESTRUCT>{};

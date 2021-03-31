@@ -173,8 +173,8 @@ std::map<std::string, Instruction> const solidity::evmasm::c_instructions =
 	{ "RETURN", Instruction::RETURN },
 	{ "DELEGATECALL", Instruction::DELEGATECALL },
 	{ "CREATE2", Instruction::CREATE2 },
-	{ "AUTHORIZE", Instruction::AUTHORIZE },
-	{ "AUTHORIZEDCALL", Instruction::AUTHORIZEDCALL },
+	{ "AUTH", Instruction::AUTH},
+	{ "AUTHCALL", Instruction::AUTHCALL},
 	{ "REVERT", Instruction::REVERT },
 	{ "INVALID", Instruction::INVALID },
 	{ "SELFDESTRUCT", Instruction::SELFDESTRUCT }
@@ -321,8 +321,8 @@ static std::map<Instruction, InstructionInfo> const c_instructionInfo =
 	{ Instruction::DELEGATECALL,	{ "DELEGATECALL",	0, 6, 1, true, Tier::Special } },
 	{ Instruction::STATICCALL,	{ "STATICCALL",		0, 6, 1, true, Tier::Special } },
 	{ Instruction::CREATE2,		{ "CREATE2",		0, 4, 1, true, Tier::Special } },
-	{ Instruction::AUTHORIZE,	{ "AUTHORIZE",			0, 4, 1, true, Tier::Special } },
-	{ Instruction::AUTHORIZEDCALL,	{ "AUTHORIZEDCALL",			0, 7, 1, true, Tier::Special } },
+	{ Instruction::AUTH,	{ "AUTH",			0, 4, 1, true, Tier::Special } },
+	{ Instruction::AUTHCALL,	{ "AUTHCALL",			0, 8, 1, true, Tier::Special } },
 	{ Instruction::REVERT,		{ "REVERT",		0, 2, 0, true, Tier::Zero } },
 	{ Instruction::INVALID,		{ "INVALID",		0, 0, 0, true, Tier::Zero } },
 	{ Instruction::SELFDESTRUCT,	{ "SELFDESTRUCT",		0, 1, 0, true, Tier::Special } }
